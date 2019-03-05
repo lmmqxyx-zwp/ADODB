@@ -38,3 +38,33 @@ function closeRecordset(rs) {
 function execute(conn, sql) {
 
 }
+
+// <script>
+// 	var conn = new ActiveXObject("ADODB.Connection");
+// 	var rs   = new ActiveXObject("ADODB.Recordset");
+// 	try{
+// 		// debugger;
+// 		var connectionstring = "Driver={MySQL ODBC 5.1 Driver};Server=192.168.0.245;Database=file;User=oppox905; Password=oppox905;Option=3;Port=3306";
+// 		conn.open(connectionstring);
+// 		var sql = "SELECT * FROM `file`.`t_china` limit 0,1000";
+// 		rs.open(sql,conn);
+// 		var fieldsCount = 0;
+// 		if(!rs.eof) {
+// 			// 1.获取字段的数量
+// 			fieldsCount = rs.Fields.count;
+// 		}
+// 		while(!rs.eof){
+// 			// 解析查询结果
+// 			for(var i = 0; i < fieldsCount; i++) {
+// 				console.log(rs.Fields(i).Name + ' => ' + rs.Fields(i).Value);
+// 			}
+// 			rs.moveNext();
+// 		}
+// 		rs.close();
+// 		conn.close();
+// 	} catch(e){
+// 		console.log(e.message);
+// 	} finally{
+		
+// 	}
+// </script>
