@@ -10,14 +10,113 @@
 function getConnection(cs) {
 	var conn = new ActiveXObject("ADODB.Connection");
 	conn.open(cs);
-
 	return conn;
+}
+
+function getRecordset() {
+	return new ActiveXObject("ADODB.Recordset");
+}
+
+function getTableNames(conn) {
+	var tableNames = [];
+	try {
+		var sql = 'show tables';
+		var rs   = getRecordset();
+		rs.open(sql,conn);
+
+		var rsSize = 0;
+
+		if (!rs.eof) {
+			rsSize = rs.Fields.count;
+		}
+
+		while (!rs.eof) {
+			// 解析查询结果
+			for(var i = 0; i < rsSize; i++) {
+				tableNames.push(rs.Fields(i).Value)
+			}
+
+			rs.moveNext();
+		}
+		closeRecordset(rs);
+		closeConnection(conn);
+	} catch(e) {
+		console.log(e.message);
+	} finally {
+
+	}
+
+	return tableNames;
 }
 
 // 获取查询结果
 function query(conn, sql) {
-	var rs   = new ActiveXObject("ADODB.Recordset");
-	rs.open(sql,conn);
+	var data;
+	try {
+		var rs   = getRecordset();
+		rs.open(sql,conn);
+
+		// var rsSize = 0;
+
+		// if (!rs.eof) {
+		// 	rsSize = rs.Fields.count;
+		// }
+
+		// while (!rs.eof) {
+		// 	// 解析查询结果
+		// 	for(var i = 0; i < rsSize; i++) {
+		// 		console.log(rs.Fields(i).Name + ' => ' + rs.Fields(i).Value);
+		// 	}
+
+		// 	rs.moveNext();
+		// }
+
+		data = parseRes(rs);
+
+		closeRecordset(rs);
+		closeConnection(conn);
+	} catch(e) {
+		console.log(e.message);
+	} finally {
+
+	}
+
+	return data;
+}
+
+function parseRes(rs) {
+	var data = [];
+	data.datas = {};
+	data.datas.records=[];
+	var first = true;
+	var index=1;
+	while (!rs.eof) {
+		if (first) {
+			var heads = [{h_name:"#"}];
+			for ( var i = 0, len = rs.Fields.count; i < len; i++) {
+				heads.push({
+					h_name : rs.Fields(i).Name
+				});
+			}
+			first = false;
+			data["heads"] = heads;
+		}
+		var records = {field:[{h_head:"#",d_value:index}]};
+		for ( var v = 0, v_len = rs.Fields.count; v < v_len; v++) {
+			// datas:[{records:[]}]
+			// {d_head:"",d_value:""}
+			var record={};
+			record["h_head"] = rs.Fields(v).Name;
+			record["d_value"] = rs.Fields(v).Value;
+			records.field.push(record);
+		}
+		data.datas.records.push(records);
+		// ....
+		rs.moveNext();
+		
+		index++;
+	}
+	return data;
 }
 
 // 关闭数据库连接

@@ -104,13 +104,13 @@ code {
 					<span class="add-on">数据库连接</span>
 						<input class="span10" id="connection_content" type="text" value="Driver={MySQL ODBC 5.1 Driver};Server=192.168.0.245;Database=file;User=oppox905; Password=oppox905;Option=3;Port=3306">
 						<a id="connection_lock" tg='true'class="btn btn-info"><i class="icon-lock"></i></a>
-						<a id="show_tables" alt='显示所有表' class="btn btn-info"><i class="icon-search"></i></a>
+						<a id="show_tables" alt='显示所有表' class="btn btn-info" style="margin-left: 4px;"><i class="icon-search"></i></a>
 					</span>
 				</div>
 				<hr>
 				<div class="input-prepend input-append">
 					<span class="add-on">查询SQL</span>
-					<input class="span4" id="query_sql" type="text"><a id="search_btn" class="btn btn-info"><i class="icon-search"></i></a>
+					<input class="span4" id="query_sql" type="text" value="select * from t_file_list"><a id="search_btn" class="btn btn-info"><i class="icon-search"></i></a>
 				</div>
 				<div class="input-prepend input-append" style="float: right">
 					<span class="add-on">执行SQL</span>
@@ -133,6 +133,7 @@ code {
     ================================================== -->
 	<!-- Placed at the end of the document so the pages load faster -->
 	<script src="./bootstrap/assets/js/jquery.js"></script>
+	<script src="./layer/layer.js"></script>
 	<script src="./bootstrap/assets/css/mustache.js"></script>
 	<script src="./ADODB.js"></script>
 	
@@ -161,19 +162,74 @@ code {
 
 	<script type="text/javascript">
 		$(function() {
-			//lock_btn conn_txt
-			//search_btn search_txt
-			//update_btn exec_txt
-			//data_div
-			//tableTemplate
-			
-			//连接开关
 			lockBtn();
-			//查询按钮开关
-			bindExecute();
-			//更新按钮开关
-			bindUpdate();
 
+			$('#show_tables').click(function() {
+				var conn = getConnection($('#connection_content').val());
+				var tableNames = getTableNames(conn);
+
+				var ul = '<ul>';
+
+				for (var i = tableNames.length - 1; i >= 0; i--) {
+					var li = '<li><a href="#">' + tableNames[i] + '</a></li>';
+					ul += li;
+				}
+
+				ul += '</ul>'
+				layer.open({
+					type: 1 //Page层类型
+					,area: ['500px', '300px']
+					,title: '快捷选择表查询'
+					,shade: 0.6 //遮罩透明度
+					,maxmin: true //允许全屏最小化
+					,anim: 1 //0-6的动画形式，-1不开启
+					,content: ul
+					,btn: ['选中', '关闭']
+					,btn1: function() {
+						alert(1);
+					}
+					,btn2: function() {
+						alert(2);
+					}
+				});
+
+				// layer.open({
+				// 	type: 2 //此处以iframe举例
+				// 	,title: '快捷选择表查询'
+				// 	,area: ['390px', '330px']
+				// 	,shade: 0
+				// 	,offset: [ //为了演示，随机坐标
+				// 		Math.random()*($(window).height()-300)
+				// 		,Math.random()*($(window).width()-390)
+				// 	]
+				// 	,maxmin: true
+				// 	,content: ul
+				// 	,btn: ['选中', '关闭']
+				// 	,yes: function(){
+				// 	}
+				// 	,btn2: function(){
+				// 		layer.closeAll();
+				// 	}
+				// 	,zIndex: layer.zIndex //重点1
+				// 	,success: function(layero){
+				// 		layer.setTop(layero); //重点2
+				// 	}
+				// });
+				// layer.alert(tableNames);
+			});
+
+			$('#search_btn').click(function() {
+				var sql = $('#query_sql').val();
+				if (sql == '') {
+					layer.alert('请输入查询SQL！');
+					return;
+				}
+
+				var conn = getConnection($('#connection_content').val());
+				var data = query(conn, sql);
+				console.log(data);
+				refreshView(data);
+			});
 		});
 		
 		function lockBtn(){
@@ -181,12 +237,10 @@ code {
 				var tg=$(this).attr("tg");
 				if(tg=='false'){
 					$("#connection_lock").removeClass("disabled");
-					//$("#connection_lock").addClass("btn btn-info");
 					$("#connection_lock").attr("tg","true");
 					$("#connection_content").removeClass("uneditable-input");
 					$("#connection_content").removeAttr("disabled");					
 				}else{
-					//$("#lock_btn").removeClass("btn btn-info");
 					$("#connection_lock").addClass("disabled");
 					$("#connection_lock").attr("tg","false");
 					$("#connection_content").addClass("uneditable-input");
@@ -194,15 +248,6 @@ code {
 				}
 			});
 		};
-		
-		function bindExecute(){
-			$("#search_btn").click(function(){
-				var sql=$("#search_txt").val();
-				var result=dbQuery.executeQuery.call(dbQuery,sql);
-				
-				refreshView(result);
-			})
-		}
 		
 		function bindUpdate(){
 			
@@ -219,10 +264,8 @@ code {
 		//更新结果集合
 		function refreshView(result){
 			var template=$("#tableTemplate").html();
-			
 			var renderTemplate=Mustache.render(template,result);
 			$("#data_div").empty();
-			
 			$("#data_div").html(renderTemplate);
 			
 		}
