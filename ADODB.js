@@ -13,10 +13,12 @@ function getConnection(cs) {
 	return conn;
 }
 
+// 获取结果集
 function getRecordset() {
 	return new ActiveXObject("ADODB.Recordset");
 }
 
+// 获取数据库中所有的表的名称
 function getTableNames(conn) {
 	var tableNames = [];
 	try {
@@ -84,6 +86,7 @@ function query(conn, sql) {
 	return data;
 }
 
+// 解析结果集
 function parseRes(rs) {
 	var data = [];
 	data.datas = {};

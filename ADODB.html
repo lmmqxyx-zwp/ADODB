@@ -161,6 +161,7 @@ code {
 	</script>
 
 	<script type="text/javascript">
+		var checkTableNameLayerIndex = -1;
 		$(function() {
 			lockBtn();
 
@@ -171,12 +172,12 @@ code {
 				var ul = '<ul>';
 
 				for (var i = tableNames.length - 1; i >= 0; i--) {
-					var li = '<li><a href="#">' + tableNames[i] + '</a></li>';
+					var li = '<li><a href="#" data-table-name="' + tableNames[i] + '" onclick="checkTableName(this);">' + tableNames[i] + '</a></li>';
 					ul += li;
 				}
 
 				ul += '</ul>'
-				layer.open({
+				checkTableNameLayerIndex = layer.open({
 					type: 1 //Page层类型
 					,area: ['500px', '300px']
 					,title: '快捷选择表查询'
@@ -184,38 +185,15 @@ code {
 					,maxmin: true //允许全屏最小化
 					,anim: 1 //0-6的动画形式，-1不开启
 					,content: ul
-					,btn: ['选中', '关闭']
+					,btn: ['帮助', '关闭']
 					,btn1: function() {
-						alert(1);
+						layer.msg('点击选中列表中的表名即可！');
 					}
 					,btn2: function() {
-						alert(2);
+						layer.close(checkTableNameLayerIndex);
+						checkTableNameLayerIndex = -1;
 					}
 				});
-
-				// layer.open({
-				// 	type: 2 //此处以iframe举例
-				// 	,title: '快捷选择表查询'
-				// 	,area: ['390px', '330px']
-				// 	,shade: 0
-				// 	,offset: [ //为了演示，随机坐标
-				// 		Math.random()*($(window).height()-300)
-				// 		,Math.random()*($(window).width()-390)
-				// 	]
-				// 	,maxmin: true
-				// 	,content: ul
-				// 	,btn: ['选中', '关闭']
-				// 	,yes: function(){
-				// 	}
-				// 	,btn2: function(){
-				// 		layer.closeAll();
-				// 	}
-				// 	,zIndex: layer.zIndex //重点1
-				// 	,success: function(layero){
-				// 		layer.setTop(layero); //重点2
-				// 	}
-				// });
-				// layer.alert(tableNames);
 			});
 
 			$('#search_btn').click(function() {
@@ -231,6 +209,15 @@ code {
 				refreshView(data);
 			});
 		});
+
+		function checkTableName(obj) {
+			if (checkTableNameLayerIndex != -1) {
+				layer.close(checkTableNameLayerIndex);
+				checkTableNameLayerIndex = -1;
+			}
+			var tableName = $(obj).attr('data-table-name');
+			$('#query_sql').val('select * from ' + tableName);
+		}
 		
 		function lockBtn(){
 			$("#connection_lock").click(function() {
